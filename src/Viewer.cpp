@@ -289,11 +289,6 @@ Viewer::keyPress(unsigned char key, int x, int y)
     fitCameraToObject();
     glutPostRedisplay();
   }
-  else if (key == 'd' || key == 'd')
-  {
-    highlighted_vertex = mesh->decimateQuadricEdgeCollapse();
-    glutPostRedisplay();
-  }
 }
 
 void

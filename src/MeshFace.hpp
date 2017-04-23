@@ -31,8 +31,11 @@ class MeshFace
     typedef typename EdgeList::reverse_iterator          EdgeReverseIterator;         ///< Reverse iterator over edges.
     typedef typename EdgeList::const_reverse_iterator    EdgeConstReverseIterator;    ///< Const reverse iterator over edges.
 
+
     /** Construct with the given normal. */
-    MeshFace(Vector3 const & normal_ = Vector3::zero()) : normal(normal_) {}
+    MeshFace(long i, Vector3 const & normal_ = Vector3::zero()) : normal(normal_) {
+      id=i;
+    }
 
     /** Check if the face has a given vertex. */
     bool hasVertex(Vertex const * vertex) const
@@ -337,10 +340,16 @@ class MeshFace
           *ei = new_edge;
     }
 
+    void set_id(long i){
+      id=i;
+    }
     Vector3 normal;
     ColorRGBA color;
     VertexList vertices;
     EdgeList edges;
+
+  public:
+    long id;
 
 }; // class MeshFace
 

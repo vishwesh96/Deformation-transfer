@@ -254,44 +254,6 @@ Mesh::collapseEdge(Edge * edge)
   return u;
 }
 
-MeshVertex *
-Mesh::decimateQuadricEdgeCollapse()
-{
-  DGP_CONSOLE << getName() << ": Mesh has " << numFaces() << " faces, collapsing a single edge";
-
-  // TODO
-
-  // The general scheme here is:
-  // (1) Loop over edges to find the one with the minimum error (remember to check if the error is negative, in which case the
-  //     edge is invalid for collapsing).
-  // (2) Collapse the min error edge, if a valid one is found (else return NULL). There is a convenient function for this (it is
-  //     a good exercise to study how this function operates). Make a note of the single vertex which is the result of the
-  //     collapse.
-  // (3) Update the normal of every face incident on this vertex.
-  // (4) Update the quadric for this vertex, as well as the normal of the vertex (there are convenient functions for this, one
-  //     of which you will write yourself).
-  // (5) For every edge incident on this vertex:
-  //     - Update the quadric and normal for its other endpoint, which has also been affected.
-  //     - Update the quadric collapse error and the optimal collapse position for the edge.
-  // (6) Return the vertex.
-
-  return NULL;
-}
-
-void
-Mesh::decimateQuadricEdgeCollapse(long target_num_faces)
-{
-  if (target_num_faces < 0)
-    return;
-
-  while (numFaces() > target_num_faces)
-  {
-    decimateQuadricEdgeCollapse();
-
-    // This might help to debug stuff. Remember that if you messed up the mesh, this saving step can also crash.
-    // save(FilePath::baseName(getName()) + format("%ld.off", numFaces()));
-  }
-}
 
 void
 Mesh::draw(Graphics::RenderSystem & render_system, bool draw_edges, bool use_vertex_data, bool send_colors) const
@@ -394,7 +356,7 @@ Mesh::loadOFF(std::string const & path)
     Vertex * v = addVertex(p);
     if (!v)
       return false;
-
+    v->set_id(i);
     indexed_vertices.push_back(v);
   }
 
@@ -427,7 +389,7 @@ Mesh::loadOFF(std::string const & path)
       face_vertices[j] = indexed_vertices[(size_t)vertex_index];
     }
 
-    addFace(face_vertices.begin(), face_vertices.end());  // ok if this fails, just skip the face with a warning
+    addFace(face_vertices.begin(), face_vertices.end(),i);  // ok if this fails, just skip the face with a warning
   }
 
   setName(FilePath::objectName(path));
@@ -491,15 +453,6 @@ Mesh::load(std::string const & path)
   else
   {
     DGP_ERROR << "Unsupported mesh format: " << path;
-  }
-
-  if (status)
-  {
-    for (VertexIterator vi = vertices.begin(); vi != vertices.end(); ++vi)
-      vi->updateQuadric();
-
-    for (EdgeIterator ei = edges.begin(); ei != edges.end(); ++ei)
-      ei->updateQuadricCollapseError();
   }
 
   return status;

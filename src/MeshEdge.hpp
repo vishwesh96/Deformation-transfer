@@ -23,7 +23,7 @@ class MeshEdge
     typedef typename FaceList::const_iterator  FaceConstIterator;  ///< Const iterator over faces.
 
     /** Construct from two endpoints. */
-    MeshEdge(Vertex * v0 = NULL, Vertex * v1 = NULL) : quadric_collapse_error(-1)
+    MeshEdge(Vertex * v0 = NULL, Vertex * v1 = NULL) 
     {
       endpoints[0] = v0;
       endpoints[1] = v1;
@@ -149,16 +149,6 @@ class MeshEdge
     bool isBoundary() const { return numFaces() <= 1; }
 
     /** Get the quadric error of collapsing this edge. */
-    double getQuadricCollapseError() const { return quadric_collapse_error; }
-
-    /** Get the optimal position to which to collapse this edge, according to a quadric error metric. */
-    Vector3 const & getQuadricCollapsePosition() const { return quadric_collapse_position; }
-
-    /**
-     * Recompute the quadric error and optimal collapse position for this vertex. If these cannot be successfully calculated,
-     * the error will be set to a negative value.
-     */
-    void updateQuadricCollapseError();
 
   private:
     friend class Mesh;
@@ -209,9 +199,6 @@ class MeshEdge
     Vertex * endpoints[2];
     FaceList faces;
 
-    // Quadric error-specific
-    double quadric_collapse_error;
-    Vector3 quadric_collapse_position;
 
 }; // class MeshEdge
 

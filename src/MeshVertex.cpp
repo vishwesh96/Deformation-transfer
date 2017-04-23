@@ -2,31 +2,6 @@
 #include "MeshEdge.hpp"
 #include "MeshFace.hpp"
 
-void
-MeshVertex::updateQuadric()
-{
-  // TODO
-
-  // This function has some skeleton code to help you along...
-
-  quadric = DMat4::zero();
-  for (FaceConstIterator fi = facesBegin(); fi != facesEnd(); ++fi)
-  {
-    Face const * face = *fi;
-    if (face->numVertices() <= 0)
-      continue;
-
-    Vector3 abc = face->getNormal().unit();
-    Real a = abc[0];
-    Real b = abc[1];
-    Real c = abc[2];
-    Real d = -abc.dot((*face->verticesBegin())->getPosition());
-
-    // What is the term for this face?
-    // How do you include it in the quadric?
-    // Do this here.
-  }
-}
 
 MeshEdge *
 MeshVertex::getEdgeTo(MeshVertex const * v)

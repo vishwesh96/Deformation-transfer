@@ -128,7 +128,7 @@ class Mesh : public virtual NamedObject, private Noncopyable
      * @return A pointer to the newly created face, or null on error.
      */
     template <typename VertexInputIterator>
-    Face * addFace(VertexInputIterator vbegin, VertexInputIterator vend)
+    Face * addFace(VertexInputIterator vbegin, VertexInputIterator vend,long id)
     {
       // Check for errors and compute normal
       size_t num_verts = 0;
@@ -146,7 +146,7 @@ class Mesh : public virtual NamedObject, private Noncopyable
       }
 
       // Create the (initially empty) face
-      faces.push_back(Face());
+      faces.push_back(Face(id));
       Face * face = &(*faces.rbegin());
 
       // Add the loop of vertices to the face
@@ -238,14 +238,6 @@ class Mesh : public virtual NamedObject, private Noncopyable
      *
      * @return The vertex to which the edge has been collapsed.
      */
-    Vertex * decimateQuadricEdgeCollapse();
-
-    /**
-     * Decimate the mesh to a target number of faces, using edge collapse decimation with a quadric error metric, as described
-     * in the Garland/Heckbert paper. Assumes all vertices have had their quadrics initialized, and all edges their collapse
-     * errors and positions initialized in advance (e.g. by load()).
-     */
-    void decimateQuadricEdgeCollapse(long target_num_faces);
 
     /** Draw the mesh on a render_system. */
     void draw(Graphics::RenderSystem & render_system, bool draw_edges = false, bool use_vertex_data = false,

@@ -41,17 +41,17 @@ class MeshVertex
     /** Default constructor. */
     MeshVertex()
     : position(Vector3::zero()), normal(Vector3::zero()), color(ColorRGBA(1, 1, 1, 1)), has_precomputed_normal(false),
-      normal_normalization_factor(0), quadric(DMat4::zero()) {}
+      normal_normalization_factor(0) {}
 
     /** Sets the vertex to have a given location. */
     explicit MeshVertex(Vector3 const & p)
     : position(p), normal(Vector3::zero()), color(ColorRGBA(1, 1, 1, 1)), has_precomputed_normal(false),
-      normal_normalization_factor(0), quadric(DMat4::zero())
+      normal_normalization_factor(0)
     {}
 
     /** Sets the vertex to have a location, normal and color. */
     MeshVertex(Vector3 const & p, Vector3 const & n, ColorRGBA const & c = ColorRGBA(1, 1, 1, 1))
-    : position(p), normal(n), color(c), has_precomputed_normal(true), normal_normalization_factor(0), quadric(DMat4::zero())
+    : position(p), normal(n), color(c), has_precomputed_normal(true), normal_normalization_factor(0)
     {}
 
     /**
@@ -156,13 +156,6 @@ class MeshVertex
     void setColor(ColorRGBA const & color_) { color = color_; }
 
     /** Get the quadric error matrix for this vertex. */
-    DMat4 const & getQuadric() const { return quadric; }
-
-    /** Manually set the quadric error matrix for this vertex. */
-    void setQuadric(DMat4 const & q) { quadric = q; }
-
-    /** Recompute the quadric error matrix for this vertex. */
-    void updateQuadric();
 
   private:
     friend class Mesh;
@@ -237,6 +230,10 @@ class MeshVertex
       }
     }
 
+    void set_id(long i){
+      id = i;
+    }
+
     Vector3 position;
     Vector3 normal;
     ColorRGBA color;
@@ -244,9 +241,8 @@ class MeshVertex
     FaceList faces;
     bool has_precomputed_normal;
     float normal_normalization_factor;
-
-    // Quadric error-specific
-    DMat4 quadric;
+  public:
+    long id;    
 
 }; // class MeshVertex
 

@@ -24,15 +24,3 @@ MeshEdge::nextAroundEndpoint(int i)
   return NULL;
 }
 
-void
-MeshEdge::updateQuadricCollapseError()
-{
-  // TODO
-
-  // Update both quadric_collapse_error and quadric_collapse_position, using the existing endpoint quadrics and the method of
-  // Garland/Heckbert.
-  //
-  // NOTE: Remember to check if the quadric Q' is invertible. If not, you will have to use a fallback option such as the
-  // midpoint of the edge (or in the worst case, set the error to a negative value to indicate this edge should not be
-  // collapsed).
-}
