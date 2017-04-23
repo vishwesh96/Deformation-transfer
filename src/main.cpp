@@ -11,6 +11,68 @@ using namespace std;
 void calcuateS(Mesh & source_mesh, Mesh & deformed_source_mesh, vector<Matrix3> & S);
 void calcuateA_c(vector<pair<long,MeshFace *> > &M,vector<Matrix3> &S, Mesh & target_mesh, Eigen::SparseMatrix<double,Eigen::RowMajor> & A, Eigen::SparseVector<double> & c);
 
+class MatrixReplacement;
+using Eigen::SparseMatrix;
+namespace Eigen {
+namespace internal {
+  // MatrixReplacement looks-like a SparseMatrix, so let's inherits its traits:
+  template<>
+  struct traits<MatrixReplacement> :  public Eigen::internal::traits<Eigen::SparseMatrix<double> >
+  {};
+}
+}
+// Example of a matrix-free wrapper from a user type to Eigen's compatible type
+// For the sake of simplicity, this example simply wrap a Eigen::SparseMatrix.
+class MatrixReplacement : public Eigen::EigenBase<MatrixReplacement> {
+public:
+  // Required typedefs, constants, and method:
+  typedef double Scalar;
+  typedef double RealScalar;
+  typedef int StorageIndex;
+  enum {
+    ColsAtCompileTime = Eigen::Dynamic,
+    MaxColsAtCompileTime = Eigen::Dynamic,
+    IsRowMajor = false
+  };
+  Index rows() const { return mp_mat->rows(); }
+  Index cols() const { return mp_mat->cols(); }
+  template<typename Rhs>
+  Eigen::Product<MatrixReplacement,Rhs,Eigen::AliasFreeProduct> operator*(const Eigen::MatrixBase<Rhs>& x) const {
+    return Eigen::Product<MatrixReplacement,Rhs,Eigen::AliasFreeProduct>(*this, x.derived());
+  }
+  // Custom API:
+  MatrixReplacement() : mp_mat(0) {}
+  void attachMyMatrix(const SparseMatrix<double> &mat) {
+    mp_mat = &mat;
+  }
+  const SparseMatrix<double> my_matrix() const { return *mp_mat; }
+private:
+  const SparseMatrix<double> *mp_mat;
+};
+// Implementation of MatrixReplacement * Eigen::DenseVector though a specialization of internal::generic_product_impl:
+namespace Eigen {
+namespace internal {
+  template<typename Rhs>
+  struct generic_product_impl<MatrixReplacement, Rhs, SparseShape, DenseShape, GemvProduct> // GEMV stands for matrix-vector
+  : generic_product_impl_base<MatrixReplacement,Rhs,generic_product_impl<MatrixReplacement,Rhs> >
+  {
+    typedef typename Product<MatrixReplacement,Rhs>::Scalar Scalar;
+    template<typename Dest>
+    static void scaleAndAddTo(Dest& dst, const MatrixReplacement& lhs, const Rhs& rhs, const Scalar& alpha)
+    {
+      // This method should implement "dst += alpha * lhs * rhs" inplace,
+      // however, for iterative solvers, alpha is always equal to 1, so let's not bother about it.
+      assert(alpha==Scalar(1) && "scaling is not implemented");
+      // Here we could simply call dst.noalias() += lhs.my_matrix() * rhs,
+      // but let's do something fancier (and less efficient):
+      for(Index i=0; i<lhs.cols(); ++i)
+        dst += rhs(i) * lhs.my_matrix().col(i);
+    }
+  };
+}
+}
+
+
 int
 usage(int argc, char * argv[])
 {
@@ -63,18 +125,30 @@ main(int argc, char * argv[])
   // M.resize(10);
   auto it = target_mesh.facesBegin();
   
-  DGP_CONSOLE<<"hi\n";
   for(int i=0;i<10;i++,it++)
   {
-  	DGP_CONSOLE<<i<<endl;
   	M.push_back(pair<long,MeshFace*>(i,&(*it)));
   }
-  DGP_CONSOLE<<"bye\n";
 
+  DGP_CONSOLE<<"1\n";
   Eigen::SparseMatrix<double,Eigen::RowMajor> A(9*M.size(),3*(target_mesh.numVertices()+target_mesh.numFaces())); 
+  DGP_CONSOLE<<"2\n";
   Eigen::SparseVector<double> c(9*M.size());
+  DGP_CONSOLE<<"3\n";
   calcuateS(source_mesh,deformed_source_mesh,S);	//calcuate S
+  DGP_CONSOLE<<"4\n";
   calcuateA_c(M,S,target_mesh,A,c);
+  DGP_CONSOLE<<"5\n";
+
+  MatrixReplacement AA;
+  AA.attachMyMatrix(A);
+
+  Eigen::VectorXd x;
+
+  Eigen::ConjugateGradient<MatrixReplacement, Eigen::Lower|Eigen::Upper, Eigen::IdentityPreconditioner> cg;
+  cg.compute(AA);
+  x = cg.solve(c);
+  DGP_CONSOLE << "CG:       #iterations: " << cg.iterations() << ", estimated error: " << cg.error() << "\n";
 
   //DGP_CONSOLE<<A;
 
@@ -138,7 +212,9 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 			exit(0);
 		}
 
+		//DGP_CONSOLE<<"AC1\n";
 		V.invert();
+		//DGP_CONSOLE<<"AC2\n";
 
 		A.reserve(Eigen::VectorXi::Constant(A.rows(),12));
 		for(int j=0;j<3;j++)
