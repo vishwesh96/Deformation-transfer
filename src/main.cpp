@@ -61,18 +61,26 @@ main(int argc, char * argv[])
   vector<Matrix3> S;								//source deformations
   vector<pair<long,MeshFace *> > M;
   // M.resize(10);
-  // auto it = target_mesh.facesBegin();
-  // for(int i=0;M.size();i++,it++){
-  // 	M[i] = pair<long,MeshFace*>(i,&(*it)); 
-  // }
+  auto it = target_mesh.facesBegin();
+  
+  DGP_CONSOLE<<"hi\n";
+  for(int i=0;i<10;i++,it++)
+  {
+  	DGP_CONSOLE<<i<<endl;
+  	M.push_back(pair<long,MeshFace*>(i,&(*it)));
+  }
+  DGP_CONSOLE<<"bye\n";
+
   Eigen::SparseMatrix<double,Eigen::RowMajor> A(9*M.size(),3*(target_mesh.numVertices()+target_mesh.numFaces())); 
   Eigen::SparseVector<double> c(9*M.size());
   calcuateS(source_mesh,deformed_source_mesh,S);	//calcuate S
   calcuateA_c(M,S,target_mesh,A,c);
 
-  Viewer viewer;
-  viewer.setObject(&source_mesh);
-  viewer.launch(argc, argv);
+  //DGP_CONSOLE<<A;
+
+  Viewer viewer1, viewer2, viewer3;
+  viewer1.setObject(&source_mesh);
+  viewer1.launch(argc, argv);
 
   return 0;
 }
@@ -110,7 +118,8 @@ void calcuateS(Mesh & source_mesh, Mesh & deformed_source_mesh, vector<Matrix3> 
 
 void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & target_mesh, Eigen::SparseMatrix<double,Eigen::RowMajor> & A, Eigen::SparseVector<double> & c)
 {
-	for(unsigned long i=0; i < M.size(); i++){
+	for(unsigned long i=0; i < M.size(); i++)
+	{
 		list<Mesh::Vertex *>::iterator  vit = M[i].second->verticesBegin();
 		Vector3 v1 = (*vit)->getPosition();
 		MeshVertex *vert1 = (*vit);
@@ -123,7 +132,8 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 		Vector3 v4 = v1 + ((v2 - v1).cross((v3 - v1)))/((v2 - v1).cross(v3 - v1)).length();
 		Matrix3 V = Matrix3::fromColumns(v2-v1,v3-v1,v4-v1);  
 
-		if(V.determinant()<1e-10){
+		if(V.determinant()<1e-10)
+		{
 			DGP_CONSOLE<<"determinant error"<<std::endl;
 			exit(0);
 		}
@@ -131,9 +141,12 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 		V.invert();
 
 		A.reserve(Eigen::VectorXi::Constant(A.rows(),12));
-		for(int j=0;j<3;j++){
-			for(int k=0;k<3;k++){
+		for(int j=0;j<3;j++)
+		{
+			for(int k=0;k<3;k++)
+			{
 				// cout<<i<<" "<<j<<" "<<k<<endl;
+				// [v1 v2 v3] * for all vertices then v4 corresponding to all triangles
 				c.coeffRef(i*9+j*3+k) = S[M[i].first](j,k);
 				A.insert(i*9+j*3+k,vert1->id*3+j) = -(V(0,k)+V(1,k)+V(2,k));
 				A.insert(i*9+j*3+k,vert2->id*3+j) = V(0,k);
