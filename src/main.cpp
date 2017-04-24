@@ -140,7 +140,45 @@ main(int argc, char * argv[])
   calcuateA_c(M,S,target_mesh,A,c);
   DGP_CONSOLE<<"5\n";
 
-  MatrixReplacement AA;
+  DGP_CONSOLE << "A rows\t" << A.rows() << "\n";
+  DGP_CONSOLE << "A cols\t" << A.cols() << "\n";
+  DGP_CONSOLE << "c rows\t" << c.rows() << "\n";
+  DGP_CONSOLE << "c cols\t" << c.cols() << "\n";
+
+  //calculating A(transpose)*A
+  Eigen::SparseMatrix<double,Eigen::RowMajor> AtA(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
+  AtA = A.transpose() * A;
+
+  DGP_CONSOLE << "AtA rows\t" << AtA.rows() << "\n";
+  DGP_CONSOLE << "AtA cols\t" << AtA.cols() << "\n";
+
+  //calculating Atc
+  Eigen::SparseVector<double> Atc(3*(target_mesh.numVertices()+target_mesh.numFaces()));
+  Atc = A.transpose() * c;
+
+  DGP_CONSOLE << "Atc rows\t" << Atc.rows() << "\n";
+  DGP_CONSOLE << "Atc cols\t" << Atc.cols() << "\n";
+
+  Eigen::SparseLU<SparseMatrix<double,Eigen::RowMajor>, Eigen::COLAMDOrdering<Eigen::Index> > solver;
+
+  Eigen::SparseMatrix<double,Eigen::RowMajor> L(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
+  Eigen::SparseMatrix<double,Eigen::RowMajor> U(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
+
+  L = AtA.triangularView<Eigen::StrictlyLower>();
+  U = AtA.triangularView<Eigen::Upper>();
+
+  DGP_CONSOLE << "L rows\t" << L.rows() << "\n";
+  DGP_CONSOLE << "L cols\t" << L.cols() << "\n";
+
+  DGP_CONSOLE << "U rows\t" << U.rows() << "\n";
+  DGP_CONSOLE << "U cols\t" << U.cols() << "\n";
+
+  //solver.analyzePattern(AtA);
+  //solver.factorize(AtA);
+  //Eigen::VectorXd x;
+  //x = solver.solve(Atc);
+
+  /*MatrixReplacement AA;
   AA.attachMyMatrix(A);
 
   Eigen::VectorXd x;
@@ -149,8 +187,10 @@ main(int argc, char * argv[])
   cg.compute(AA);
   x = cg.solve(c);
   DGP_CONSOLE << "CG:       #iterations: " << cg.iterations() << ", estimated error: " << cg.error() << "\n";
-
+*/
   //DGP_CONSOLE<<A;
+
+
 
   Viewer viewer1, viewer2, viewer3;
   viewer1.setObject(&source_mesh);
@@ -213,6 +253,7 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 		}
 
 		//DGP_CONSOLE<<"AC1\n";
+    // v inverse for target
 		V.invert();
 		//DGP_CONSOLE<<"AC2\n";
 
@@ -223,7 +264,11 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 			{
 				// cout<<i<<" "<<j<<" "<<k<<endl;
 				// [v1 v2 v3] * for all vertices then v4 corresponding to all triangles
-				c.coeffRef(i*9+j*3+k) = S[M[i].first](j,k);
+				
+        // setting coefficients of c
+        c.coeffRef(i*9+j*3+k) = S[M[i].first](j,k);
+
+        // setting coefficients of A
 				A.insert(i*9+j*3+k,vert1->id*3+j) = -(V(0,k)+V(1,k)+V(2,k));
 				A.insert(i*9+j*3+k,vert2->id*3+j) = V(0,k);
 				A.insert(i*9+j*3+k,vert3->id*3+j) = V(1,k);
