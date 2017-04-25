@@ -3,10 +3,12 @@
 #undef Success  
 #include "Eigen/Sparse"
 #include <cstdlib>
+#include "Eigen/SparseLU"
 #include <vector>
 
 
 using namespace std;
+using namespace Eigen;
 
 void calcuateS(Mesh & source_mesh, Mesh & deformed_source_mesh, vector<Matrix3> & S);
 void calcuateA_c(vector<pair<long,MeshFace *> > &M,vector<Matrix3> &S, Mesh & target_mesh, Eigen::SparseMatrix<double,Eigen::RowMajor> & A, Eigen::SparseVector<double> & c);
@@ -172,6 +174,14 @@ main(int argc, char * argv[])
 
   DGP_CONSOLE << "U rows\t" << U.rows() << "\n";
   DGP_CONSOLE << "U cols\t" << U.cols() << "\n";
+
+  VectorXd x(AtA.rows());
+  Eigen::matrixL().solve(Atc);
+
+  //x = Eigen::SparseLU<SparseMatrix<double, Eigen::RowMajor>, Eigen::COLAMDOrdering<int> >(AtA).solve(Atc);
+
+  //AtA.finalize();
+  //Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::UmfPack> lu_of_A(AtA);
 
   //solver.analyzePattern(AtA);
   //solver.factorize(AtA);
