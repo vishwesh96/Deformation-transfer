@@ -111,6 +111,20 @@ main(int argc, char * argv[])
   DGP_CONSOLE << "Read mesh '" << target_mesh.getName() << "' with " << target_mesh.numVertices() << " vertices, " << target_mesh.numEdges()
               << " edges and " << target_mesh.numFaces() << " faces from " << target_path;
 
+
+  //setting id of meshvertex
+  long li = 0;
+  for(auto it = source_mesh.verticesBegin(); it!=source_mesh.verticesEnd(); ++it, li++)it->id = li;
+
+  li = 0;
+  for(auto it = deformed_source_mesh.verticesBegin(); it!=deformed_source_mesh.verticesEnd(); ++it, li++)it->id = li;
+
+  li = 0;
+  for(auto it = target_mesh.verticesBegin(); it!=target_mesh.verticesEnd(); ++it, li++)it->id = li;
+
+  li = 0;
+  for(auto it = deformed_target_mesh.verticesBegin(); it!=deformed_target_mesh.verticesEnd(); ++it, li++)it->id = li;
+
   // if (target_num_faces >= 0 && mesh.numFaces() > target_num_faces)
   // {
   //   mesh.updateBounds();
