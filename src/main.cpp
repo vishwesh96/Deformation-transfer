@@ -8,6 +8,9 @@
 #include "Eigen/UmfPackSupport"
 #include "Eigen/umfpack.h"
 
+#include <iostream>
+#include <fstream>
+
 using namespace std;
 using namespace Eigen;
 
@@ -126,9 +129,9 @@ main(int argc, char * argv[])
   vector<Matrix3> S;								//source deformations
   vector<pair<long,MeshFace *> > M;
   // M.resize(10);
-  auto it = target_mesh.facesBegin();
+  auto it = deformed_source_mesh.facesBegin();
   
-  for(int i=0;i<10;i++,it++)
+  for(int i=0;it!=deformed_source_mesh.facesEnd();i++,it++)
   {
   	M.push_back(pair<long,MeshFace*>(i,&(*it)));
   }
@@ -181,6 +184,8 @@ main(int argc, char * argv[])
 
   DGP_CONSOLE << "AtA != 0\t" << AtA.nonZeros() << "\n";
   DGP_CONSOLE << "Atc != 0\t" << Atc.nonZeros() << "\n";
+
+  //Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::UmfPack> lu_of_A(AtA);
 
   //VectorXd x(AtA.rows());
   //Eigen::matrixL().solve(Atc);
@@ -249,6 +254,16 @@ void calcuateS(Mesh & source_mesh, Mesh & deformed_source_mesh, vector<Matrix3> 
 
 void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & target_mesh, Eigen::SparseMatrix<double,Eigen::RowMajor> & A, Eigen::SparseVector<double> & c)
 {
+
+  ofstream a_file;
+  ofstream c_file;
+
+  a_file.open("A.txt");
+  c_file.open("c.txt");
+
+  a_file << A.rows() << " " << A.cols() << "\n";
+  c_file << c.rows() << " " << c.cols() << "\n"; 
+
 	for(unsigned long i=0; i < M.size(); i++)
 	{
 		list<Mesh::Vertex *>::iterator  vit = M[i].second->verticesBegin();
@@ -274,6 +289,8 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 		V.invert();
 		//DGP_CONSOLE<<"AC2\n";
 
+    
+
 		A.reserve(Eigen::VectorXi::Constant(A.rows(),12));
 		for(int j=0;j<3;j++)
 		{
@@ -285,14 +302,27 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
         // setting coefficients of c
         c.coeffRef(i*9+j*3+k) = S[M[i].first](j,k);
 
+        c_file << i*9+j*3+k << " " << S[M[i].first](j,k) << "\n";
+
         // setting coefficients of A
 				A.insert(i*9+j*3+k,vert1->id*3+j) = -(V(0,k)+V(1,k)+V(2,k));
+        a_file << i*9+j*3+k << " " << vert1->id*3+j << " " << -(V(0,k)+V(1,k)+V(2,k)) << "\n";
+
 				A.insert(i*9+j*3+k,vert2->id*3+j) = V(0,k);
+        a_file <<  i*9+j*3+k << " " << vert2->id*3+j << " " << V(0,k) << "\n";
+
 				A.insert(i*9+j*3+k,vert3->id*3+j) = V(1,k);
+        a_file << i*9+j*3+k << " " << vert3->id*3+j << " " << V(1,k) << "\n";
+
 				A.insert(i*9+j*3+k,target_mesh.numVertices()*3 + M[i].second->id*3 + j) = V(2,k);
+        a_file << i*9+j*3+k << " " << target_mesh.numVertices()*3 + M[i].second->id*3 + j << " " << V(2,k) << "\n";
+
 			}
 		}
 
-
 	}
+
+  a_file.close();
+  c_file.close();
+
 }
