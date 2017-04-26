@@ -16,11 +16,13 @@ if __name__ == '__main__':
 
 	parser.add_option("-a", "--afile", dest="a_file", help="a.txt", metavar="FILE", default="A.txt")
 	parser.add_option("-c", "--cfile", dest="c_file", help="c.txt", metavar="FILE", default="c.txt")
+	parser.add_option("-o", "--ofile", dest="c_file", help="c.txt", metavar="FILE", default="ans.txt")
 
 	(options, args) = parser.parse_args()
 
 	a_file = options.a_file
 	c_file = options.c_file
+	o_file = options.o_file
 
 	fa = open(a_file, 'r')
 	fc = open(c_file, 'r')
@@ -97,12 +99,16 @@ if __name__ == '__main__':
 
 	ata = ata.tocsr()
 	x = spsolve(ata, atc, use_umfpack = True)
+	#x = bicgstab(ata, atc, maxiter = 1000)
+	print(x)
 
-# rand = np.random.rand
-# mtx = sps.lil_matrix((10000000, 10000000), dtype=np.float64)
-# mtx[0, :1000000] = rand(1000000)
-# mtx[1, 1000000:2000000] = mtx[0, 1000000:2000000]
-# mtx.setdiag(rand(10000000))
-# mtx=mtx.tocsr()
-# rhs=rand(100000)
-# x = linsolve.spsolve(mtx, rhs)
+	i = 0
+	f = open(o_file, "w")
+	for x1 in x:
+		f.write(str(x1)+" ")
+		i = i + 1
+		if i == 3:
+			i = 0
+			f.write("\n")
+
+	f.close()

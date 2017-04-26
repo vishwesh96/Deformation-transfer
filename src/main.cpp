@@ -125,6 +125,15 @@ main(int argc, char * argv[])
   li = 0;
   for(auto it = deformed_target_mesh.verticesBegin(); it!=deformed_target_mesh.verticesEnd(); ++it, li++)it->id = li;
 
+
+  //for(auto it = source_mesh.verticesBegin(); it!=source_mesh.verticesEnd(); ++it)DGP_CONSOLE << it->id;
+
+  //for(auto it = deformed_source_mesh.verticesBegin(); it!=deformed_source_mesh.verticesEnd(); ++it)DGP_CONSOLE << it->id;
+
+  //for(auto it = target_mesh.verticesBegin(); it!=target_mesh.verticesEnd(); ++it)DGP_CONSOLE << it->id;
+
+  //for(auto it = deformed_target_mesh.verticesBegin(); it!=deformed_target_mesh.verticesEnd(); ++it)DGP_CONSOLE << it->id;
+
   // if (target_num_faces >= 0 && mesh.numFaces() > target_num_faces)
   // {
   //   mesh.updateBounds();
@@ -143,41 +152,41 @@ main(int argc, char * argv[])
   vector<Matrix3> S;								//source deformations
   vector<pair<long,MeshFace *> > M;
   // M.resize(10);
-  auto it = deformed_source_mesh.facesBegin();
+  auto it = target_mesh.facesBegin();
   
-  for(int i=0;it!=deformed_source_mesh.facesEnd();i++,it++)
+  for(int i=0;it!=target_mesh.facesEnd();i++,it++)
   {
   	M.push_back(pair<long,MeshFace*>(i,&(*it)));
   }
 
-  DGP_CONSOLE<<"1\n";
+  //DGP_CONSOLE<<"1\n";
   Eigen::SparseMatrix<double,Eigen::RowMajor> A(9*M.size(),3*(target_mesh.numVertices()+target_mesh.numFaces())); 
-  DGP_CONSOLE<<"2\n";
+  //DGP_CONSOLE<<"2\n";
   Eigen::SparseVector<double> c(9*M.size());
-  DGP_CONSOLE<<"3\n";
+  //DGP_CONSOLE<<"3\n";
   calcuateS(source_mesh,deformed_source_mesh,S);	//calcuate S
-  DGP_CONSOLE<<"4\n";
+  //DGP_CONSOLE<<"4\n";
   calcuateA_c(M,S,target_mesh,A,c);
-  DGP_CONSOLE<<"5\n";
+  //DGP_CONSOLE<<"5\n";
 
-  DGP_CONSOLE << "A rows\t" << A.rows() << "\n";
-  DGP_CONSOLE << "A cols\t" << A.cols() << "\n";
-  DGP_CONSOLE << "c rows\t" << c.rows() << "\n";
-  DGP_CONSOLE << "c cols\t" << c.cols() << "\n";
+  //DGP_CONSOLE << "A rows\t" << A.rows() << "\n";
+  //DGP_CONSOLE << "A cols\t" << A.cols() << "\n";
+  //DGP_CONSOLE << "c rows\t" << c.rows() << "\n";
+  //DGP_CONSOLE << "c cols\t" << c.cols() << "\n";
 
   //calculating A(transpose)*A
   Eigen::SparseMatrix<double,Eigen::RowMajor> AtA(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
   AtA = A.transpose() * A;
 
-  DGP_CONSOLE << "AtA rows\t" << AtA.rows() << "\n";
-  DGP_CONSOLE << "AtA cols\t" << AtA.cols() << "\n";
+  //DGP_CONSOLE << "AtA rows\t" << AtA.rows() << "\n";
+  //DGP_CONSOLE << "AtA cols\t" << AtA.cols() << "\n";
 
   //calculating Atc
   Eigen::SparseVector<double> Atc(3*(target_mesh.numVertices()+target_mesh.numFaces()));
   Atc = A.transpose() * c;
 
-  DGP_CONSOLE << "Atc rows\t" << Atc.rows() << "\n";
-  DGP_CONSOLE << "Atc cols\t" << Atc.cols() << "\n";
+  //DGP_CONSOLE << "Atc rows\t" << Atc.rows() << "\n";
+  //DGP_CONSOLE << "Atc cols\t" << Atc.cols() << "\n";
 
   Eigen::SparseLU<SparseMatrix<double,Eigen::RowMajor>, Eigen::COLAMDOrdering<Eigen::Index> > solver;
 
@@ -187,17 +196,17 @@ main(int argc, char * argv[])
   L = AtA.triangularView<Eigen::StrictlyLower>();
   U = AtA.triangularView<Eigen::Upper>();
 
-  DGP_CONSOLE << "L rows\t" << L.rows() << "\n";
-  DGP_CONSOLE << "L cols\t" << L.cols() << "\n";
+  //DGP_CONSOLE << "L rows\t" << L.rows() << "\n";
+  //DGP_CONSOLE << "L cols\t" << L.cols() << "\n";
 
-  DGP_CONSOLE << "U rows\t" << U.rows() << "\n";
-  DGP_CONSOLE << "U cols\t" << U.cols() << "\n";
+  //DGP_CONSOLE << "U rows\t" << U.rows() << "\n";
+  //DGP_CONSOLE << "U cols\t" << U.cols() << "\n";
 
-  DGP_CONSOLE << "A != 0\t" << A.nonZeros() << "\n";
-  DGP_CONSOLE << "c != 0\t" << c.nonZeros() << "\n";
+  //DGP_CONSOLE << "A != 0\t" << A.nonZeros() << "\n";
+  //DGP_CONSOLE << "c != 0\t" << c.nonZeros() << "\n";
 
-  DGP_CONSOLE << "AtA != 0\t" << AtA.nonZeros() << "\n";
-  DGP_CONSOLE << "Atc != 0\t" << Atc.nonZeros() << "\n";
+  //DGP_CONSOLE << "AtA != 0\t" << AtA.nonZeros() << "\n";
+  //DGP_CONSOLE << "Atc != 0\t" << Atc.nonZeros() << "\n";
 
   //Eigen::SparseLU<Eigen::SparseMatrix<double>, Eigen::UmfPack> lu_of_A(AtA);
 
@@ -303,7 +312,7 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 		V.invert();
 		//DGP_CONSOLE<<"AC2\n";
 
-    
+    DGP_CONSOLE << vert1->id << " " << vert2->id << " " << vert3->id << "\n";
 
 		A.reserve(Eigen::VectorXi::Constant(A.rows(),12));
 		for(int j=0;j<3;j++)
@@ -311,7 +320,7 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 			for(int k=0;k<3;k++)
 			{
 				// cout<<i<<" "<<j<<" "<<k<<endl;
-				// [v1 v2 v3] * for all vertices then v4 corresponding to all triangles
+				// [x1 x2 x3] * for all vertices then [x y z] of v4 corresponding to all triangles
 				
         // setting coefficients of c
         c.coeffRef(i*9+j*3+k) = S[M[i].first](j,k);
