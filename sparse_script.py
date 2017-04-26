@@ -2,7 +2,7 @@ import numpy as np
 import scipy.sparse as sps
 from scipy.sparse.linalg.dsolve import linsolve
 from scipy.sparse.linalg import *
-from scipy import *
+from scipy import io
 
 import sys
 import os
@@ -85,7 +85,15 @@ if __name__ == '__main__':
 
 	# print(ata)
 	io.mmwrite("AtA.mtx", ata)
-	io.mmwrite("Atc.mtx", atc)
+	
+	f = open("Atc.mtx", 'w')
+	f.write(str(atc.size))
+	f.write('\n')
+	for a in atc:
+		f.write(str(a))
+		f.write('\n')
+
+	f.close()
 
 	ata = ata.tocsr()
 	x = spsolve(ata, atc, use_umfpack = True)
