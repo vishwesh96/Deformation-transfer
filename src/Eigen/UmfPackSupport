@@ -16,6 +16,8 @@ extern "C" {
 #include <umfpack.h>
 }
 
+//#include "umfpack.h"
+
 /** \ingroup Support_modules
   * \defgroup UmfPackSupport_Module UmfPackSupport module
   *

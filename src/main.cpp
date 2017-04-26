@@ -5,7 +5,8 @@
 #include <cstdlib>
 #include "Eigen/SparseLU"
 #include <vector>
-
+#include "Eigen/UmfPackSupport"
+#include "Eigen/umfpack.h"
 
 using namespace std;
 using namespace Eigen;
@@ -175,8 +176,14 @@ main(int argc, char * argv[])
   DGP_CONSOLE << "U rows\t" << U.rows() << "\n";
   DGP_CONSOLE << "U cols\t" << U.cols() << "\n";
 
-  VectorXd x(AtA.rows());
-  Eigen::matrixL().solve(Atc);
+  DGP_CONSOLE << "A != 0\t" << A.nonZeros() << "\n";
+  DGP_CONSOLE << "c != 0\t" << c.nonZeros() << "\n";
+
+  DGP_CONSOLE << "AtA != 0\t" << AtA.nonZeros() << "\n";
+  DGP_CONSOLE << "Atc != 0\t" << Atc.nonZeros() << "\n";
+
+  //VectorXd x(AtA.rows());
+  //Eigen::matrixL().solve(Atc);
 
   //x = Eigen::SparseLU<SparseMatrix<double, Eigen::RowMajor>, Eigen::COLAMDOrdering<int> >(AtA).solve(Atc);
 
