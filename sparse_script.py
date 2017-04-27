@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
 	parser.add_option("-a", "--afile", dest="a_file", help="a.txt", metavar="FILE", default="A.txt")
 	parser.add_option("-c", "--cfile", dest="c_file", help="c.txt", metavar="FILE", default="c.txt")
-	parser.add_option("-o", "--ofile", dest="c_file", help="c.txt", metavar="FILE", default="ans.txt")
+	parser.add_option("-o", "--ofile", dest="o_file", help="o.txt", metavar="FILE", default="ans.txt")
 
 	(options, args) = parser.parse_args()
 

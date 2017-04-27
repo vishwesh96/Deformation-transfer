@@ -5,8 +5,10 @@
 #include <cstdlib>
 #include "Eigen/SparseLU"
 #include <vector>
-#include "Eigen/UmfPackSupport"
-#include "Eigen/umfpack.h"
+#include "DGP/Plane3.hpp"
+
+// #include "Eigen/UmfPackSupport"
+// #include "Eigen/umfpack.h"
 
 #include <iostream>
 #include <fstream>
@@ -16,6 +18,7 @@ using namespace Eigen;
 
 void calcuateS(Mesh & source_mesh, Mesh & deformed_source_mesh, vector<Matrix3> & S);
 void calcuateA_c(vector<pair<long,MeshFace *> > &M,vector<Matrix3> &S, Mesh & target_mesh, Eigen::SparseMatrix<double,Eigen::RowMajor> & A, Eigen::SparseVector<double> & c);
+void calculateM(string correspondence_path, Mesh & source_mesh, Mesh & target_mesh, vector<pair<long,MeshFace *> > &M);
 
 class MatrixReplacement;
 using Eigen::SparseMatrix;
@@ -83,7 +86,7 @@ int
 usage(int argc, char * argv[])
 {
   DGP_CONSOLE << "";
-  DGP_CONSOLE << "Usage: " << argv[0] << " <source-in> <source-deformed> <target-in>";
+  DGP_CONSOLE << "Usage: " << argv[0] << " <source-in> <source-deformed> <target-in> <source_target_correspondence>";
   DGP_CONSOLE << "";
 
   return -1;
@@ -98,6 +101,7 @@ main(int argc, char * argv[])
   std::string source_path = argv[1];
   std::string source_deformed_path = argv[2];
   std::string target_path = argv[3];
+  std::string correspondence_path = argv[4];
 
   Mesh source_mesh, deformed_source_mesh, target_mesh, deformed_target_mesh;
   
@@ -152,12 +156,15 @@ main(int argc, char * argv[])
   vector<Matrix3> S;								//source deformations
   vector<pair<long,MeshFace *> > M;
   // M.resize(10);
-  auto it = target_mesh.facesBegin();
+
+  calculateM(correspondence_path,source_mesh,target_mesh,M);
   
-  for(int i=0;it!=target_mesh.facesEnd();i++,it++)
-  {
-  	M.push_back(pair<long,MeshFace*>(i,&(*it)));
-  }
+  // auto it = target_mesh.facesBegin();
+  
+  // for(int i=0;it!=target_mesh.facesEnd();i++,it++)
+  // {
+  // 	M.push_back(pair<long,MeshFace*>(i,&(*it)));
+  // }
 
   //DGP_CONSOLE<<"1\n";
   Eigen::SparseMatrix<double,Eigen::RowMajor> A(9*M.size(),3*(target_mesh.numVertices()+target_mesh.numFaces())); 
@@ -175,26 +182,26 @@ main(int argc, char * argv[])
   //DGP_CONSOLE << "c cols\t" << c.cols() << "\n";
 
   //calculating A(transpose)*A
-  Eigen::SparseMatrix<double,Eigen::RowMajor> AtA(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
-  AtA = A.transpose() * A;
+  // Eigen::SparseMatrix<double,Eigen::RowMajor> AtA(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
+  // AtA = A.transpose() * A;
 
   //DGP_CONSOLE << "AtA rows\t" << AtA.rows() << "\n";
   //DGP_CONSOLE << "AtA cols\t" << AtA.cols() << "\n";
 
   //calculating Atc
-  Eigen::SparseVector<double> Atc(3*(target_mesh.numVertices()+target_mesh.numFaces()));
-  Atc = A.transpose() * c;
+  // Eigen::SparseVector<double> Atc(3*(target_mesh.numVertices()+target_mesh.numFaces()));
+  // Atc = A.transpose() * c;
 
   //DGP_CONSOLE << "Atc rows\t" << Atc.rows() << "\n";
   //DGP_CONSOLE << "Atc cols\t" << Atc.cols() << "\n";
 
-  Eigen::SparseLU<SparseMatrix<double,Eigen::RowMajor>, Eigen::COLAMDOrdering<Eigen::Index> > solver;
+  // Eigen::SparseLU<SparseMatrix<double,Eigen::RowMajor>, Eigen::COLAMDOrdering<Eigen::Index> > solver;
 
-  Eigen::SparseMatrix<double,Eigen::RowMajor> L(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
-  Eigen::SparseMatrix<double,Eigen::RowMajor> U(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
+  // Eigen::SparseMatrix<double,Eigen::RowMajor> L(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
+  // Eigen::SparseMatrix<double,Eigen::RowMajor> U(3*(target_mesh.numVertices()+target_mesh.numFaces()), 3*(target_mesh.numVertices()+target_mesh.numFaces())); 
 
-  L = AtA.triangularView<Eigen::StrictlyLower>();
-  U = AtA.triangularView<Eigen::Upper>();
+  // L = AtA.triangularView<Eigen::StrictlyLower>();
+  // U = AtA.triangularView<Eigen::Upper>();
 
   //DGP_CONSOLE << "L rows\t" << L.rows() << "\n";
   //DGP_CONSOLE << "L cols\t" << L.cols() << "\n";
@@ -348,4 +355,84 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
   a_file.close();
   c_file.close();
 
+}
+
+
+void calculateM(string correspondence_path, Mesh & source_mesh, Mesh & target_mesh, vector<pair<long,MeshFace *> > &M)
+{
+    std::ifstream in(correspondence_path.c_str());
+    if (!in)
+    {
+      DGP_ERROR << "Could not open correspondence map" << correspondence_path << "' for reading";
+      return;
+    } 
+
+  long np;
+    if (!(in >>np))
+    {
+      DGP_ERROR << "Could not read number of correspondence points from file '" << correspondence_path << '\'';
+      return;
+    }
+    // clear();
+
+    vector<Vector3> source_vertices;
+    vector<Vector3> target_vertices;
+    Vector3 s;
+    Vector3 t;
+    for (long i = 0; i < np; ++i)
+    {
+      if (!(in >> s[0] >> s[1] >> s[2] >> t[0] >> t[1] >> t[2]))
+      {
+        DGP_ERROR << "Could not read correspondence points ";
+      }
+      source_vertices.push_back(s);
+      target_vertices.push_back(t);
+    }
+    // cout<<"source"<<endl;;
+    // for(long i =0 ;i < source_vertices.size();i++){
+    //   cout<<source_vertices[i][0]<<" "<<source_vertices[i][1]<<" "<<source_vertices[i][2]<<endl;
+    // }
+    // cout<<"target"<<endl;
+    // for(long i =0 ;i < target_vertices.size();i++){
+    //   cout<<target_vertices[i][0]<<" "<<target_vertices[i][1]<<" "<<target_vertices[i][2]<<endl;
+    // }
+    for(long i=0;i<np;i++){
+
+      long source_index;
+      MeshFace * target_face;
+      double min_dist = numeric_limits<double>::max();
+
+      for(auto it = source_mesh.facesBegin(); it!= source_mesh.facesEnd(); it++){
+        vector<Vector3> vertices;
+        auto vit = (*it).verticesBegin(); 
+        vertices.push_back((*vit)->getPosition());
+        vit++;
+        vertices.push_back((*vit)->getPosition());
+        vit++;
+        vertices.push_back((*vit)->getPosition());
+        Plane3 face_plane = Plane3::fromNPoints(vertices);
+        double temp_dist = face_plane.squaredDistance(source_vertices[i]);
+        if(temp_dist < min_dist){
+          min_dist = temp_dist;
+          source_index = (*it).id;
+        }
+      }     
+      min_dist =  numeric_limits<double>::max();
+      for(auto it = target_mesh.facesBegin(); it!= target_mesh.facesEnd(); it++){
+        vector<Vector3> vertices;
+        auto vit = (*it).verticesBegin(); 
+        vertices.push_back((*vit)->getPosition());
+        vit++;
+        vertices.push_back((*vit)->getPosition());
+        vit++;
+        vertices.push_back((*vit)->getPosition());
+        Plane3 face_plane = Plane3::fromNPoints(vertices);
+        double temp_dist = face_plane.squaredDistance(target_vertices[i]);
+        if(temp_dist < min_dist){
+          min_dist = temp_dist;
+          target_face = &(*it);
+        }
+      }
+    M.push_back(pair<long,MeshFace*>(source_index,target_face));
+    }   
 }
