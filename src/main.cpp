@@ -159,41 +159,11 @@ main(int argc, char * argv[])
   for(auto it = deformed_target_mesh.verticesBegin(); it!=deformed_target_mesh.verticesEnd(); ++it, li++)it->id = li;
 
 
-  //for(auto it = source_mesh.verticesBegin(); it!=source_mesh.verticesEnd(); ++it)DGP_CONSOLE << it->id;
-
-  //for(auto it = deformed_source_mesh.verticesBegin(); it!=deformed_source_mesh.verticesEnd(); ++it)DGP_CONSOLE << it->id;
-
-  //for(auto it = target_mesh.verticesBegin(); it!=target_mesh.verticesEnd(); ++it)DGP_CONSOLE << it->id;
-
-  //for(auto it = deformed_target_mesh.verticesBegin(); it!=deformed_target_mesh.verticesEnd(); ++it)DGP_CONSOLE << it->id;
-
-  // if (target_num_faces >= 0 && mesh.numFaces() > target_num_faces)
-  // {
-  //   mesh.updateBounds();
-  // }
-
-  // if (!out_path.empty())
-  // {
-  //   if (!mesh.save(out_path))
-  //     return -1;
-
-  //   DGP_CONSOLE << "Saved mesh to " << out_path;
-  // }
-
-  // source_mesh.check(deformed_source_mesh);			//check source and deformed dimensions and also check for triangular mesh
 
   vector<Matrix3> S;								//source deformations
   vector<pair<long,MeshFace *> > M;
-  // M.resize(10);
 
   calculateM(correspondence_path,source_mesh,target_mesh,M);
-
-  // auto it = target_mesh.facesBegin();
-  
-  // for(int i=0;it!=target_mesh.facesEnd();i++,it++)
-  // {
-  // 	M.push_back(pair<long,MeshFace*>(i,&(*it)));
-  // }
 
   //DGP_CONSOLE<<"1\n";
   Eigen::SparseMatrix<double,Eigen::RowMajor> A(9*M.size(),3*(target_mesh.numVertices()+target_mesh.numFaces())); 
@@ -350,7 +320,7 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 
     // DGP_CONSOLE << vert1->id << " " << vert2->id << " " << vert3->id << "\n";
 
-		A.reserve(Eigen::VectorXi::Constant(A.rows(),12));
+		// A.reserve(Eigen::VectorXi::Constant(A.rows(),12));
 		for(int j=0;j<3;j++)
 		{
 			for(int k=0;k<3;k++)
@@ -359,21 +329,21 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 				// [x1 x2 x3] * for all vertices then [x y z] of v4 corresponding to all triangles
 				
         // setting coefficients of c
-        c.coeffRef(i*9+j*3+k) = S[M[i].first](j,k);
+        // c.coeffRef(i*9+j*3+k) = S[M[i].first](j,k);
 
         c_file << i*9+j*3+k << " " << S[M[i].first](j,k) << "\n";
 
         // setting coefficients of A
-				A.insert(i*9+j*3+k,vert1->id*3+j) = -(V(0,k)+V(1,k)+V(2,k));
+				// A.insert(i*9+j*3+k,vert1->id*3+j) = -(V(0,k)+V(1,k)+V(2,k));
         a_file << i*9+j*3+k << " " << vert1->id*3+j << " " << -(V(0,k)+V(1,k)+V(2,k)) << "\n";
 
-				A.insert(i*9+j*3+k,vert2->id*3+j) = V(0,k);
+				// A.insert(i*9+j*3+k,vert2->id*3+j) = V(0,k);
         a_file <<  i*9+j*3+k << " " << vert2->id*3+j << " " << V(0,k) << "\n";
 
-				A.insert(i*9+j*3+k,vert3->id*3+j) = V(1,k);
+				// A.insert(i*9+j*3+k,vert3->id*3+j) = V(1,k);
         a_file << i*9+j*3+k << " " << vert3->id*3+j << " " << V(1,k) << "\n";
 
-				A.insert(i*9+j*3+k,target_mesh.numVertices()*3 + M[i].second->id*3 + j) = V(2,k);
+				// A.insert(i*9+j*3+k,target_mesh.numVertices()*3 + M[i].second->id*3 + j) = V(2,k);
         a_file << i*9+j*3+k << " " << target_mesh.numVertices()*3 + M[i].second->id*3 + j << " " << V(2,k) << "\n";
 
 			}

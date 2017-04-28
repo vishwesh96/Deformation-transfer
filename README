@@ -1,0 +1,41 @@
+Installing dependencies:
+Assume $basedir is some directory where you're going to check out the
+source code.
+* cd $basedir
+* git clone --recursive https://github.com/sidch/TheaDepsUnix   (Thea
+depends on Boost etc which are all here)
+* cd TheaDepsUnix/Source
+* sudo ./install-defaults.sh --with-wxwidgets --use-root --user
+<your-username> --prefix /usr/local -j4
+(Replace 4 with the actual number of hardware threads on your system,
+typically 2, 4, or 8.)
+This will install some libraries by compiling them from source and placing
+the result in $prefix, and some libraries with apt-get. Carefully check for
+errors (warnings are generally ok). If there are errors, you probably need
+to explicitly install some third-party libraries/tools -- see the error
+messages -- and rerun the command. Make sure there are no errors in the
+output.
+
+Installing the Thea library and bundled tools:
+* cd $basedir
+* git clone --recursive https://github.com/sidch/Thea
+* cd Thea/Code/Build
+* cmake .
+* make -j4
+* make TheaTools -j4
+* sudo make install    (puts core Thea libs and headers in /usr/local)
+Again check for errors.
+
+This should put a program called Browse3D in
+$basedir/Thea/Code/Build/Output/bin. You can use it to view 3D files. Run
+it to make sure everything is working properly: try "Browse3D
+$basedir/Data/Models/teapot.obj".
+Ping me if/when you have problems with any step above. Remember that some
+CMake dependency search errors require you to delete the cache
+(CMakeCache.txt) and rerun CMake after you install new libraries.
+
+Documentation:
+* sudo apt-get install doxygen
+* cd Thea/Code/Documentation
+* doxygen
+* gopen html/index.html
