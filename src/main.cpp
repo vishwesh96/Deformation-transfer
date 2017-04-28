@@ -98,6 +98,35 @@ main(int argc, char * argv[])
   if (argc < 2)
     return usage(argc, argv);
 
+  if (argc == 3){
+    std::string path = argv[1];
+    std::string out_path = argv[2];
+ 
+   Mesh mesh ;
+    if (!mesh.load(path)){
+      return -1;
+    }
+    std::ofstream out(out_path.c_str(), std::ios::binary);
+    if (!out)
+    {
+      DGP_ERROR << "Could not open '" << out_path << "' for writing";
+      return -1;
+    }
+
+   for(auto it = mesh.facesBegin(); it!=mesh.facesEnd(); ++it){
+      auto vit = (*it).verticesBegin(); 
+      Vector3 v0 = (*vit)->getPosition();
+      vit++;
+      Vector3 v1 = (*vit)->getPosition();
+      vit++;
+      Vector3 v2 = (*vit)->getPosition(); 
+      Vector3 point  = (v0+v1+v2)/3;
+      Vector3 normal = (*it).getNormal();
+      out << point[0] << ' ' << point[1] << ' ' << point[2] << ' ' <<normal[0] << ' ' << normal[1] << ' ' << normal[2] << '\n';
+    }
+  return 0;
+  }
+
   std::string source_path = argv[1];
   std::string source_deformed_path = argv[2];
   std::string target_path = argv[3];
@@ -158,7 +187,7 @@ main(int argc, char * argv[])
   // M.resize(10);
 
   calculateM(correspondence_path,source_mesh,target_mesh,M);
-  
+
   // auto it = target_mesh.facesBegin();
   
   // for(int i=0;it!=target_mesh.facesEnd();i++,it++)
@@ -319,7 +348,7 @@ void calcuateA_c(vector<pair<long,MeshFace*> > &M,vector<Matrix3> &S, Mesh & tar
 		V.invert();
 		//DGP_CONSOLE<<"AC2\n";
 
-    DGP_CONSOLE << vert1->id << " " << vert2->id << " " << vert3->id << "\n";
+    // DGP_CONSOLE << vert1->id << " " << vert2->id << " " << vert3->id << "\n";
 
 		A.reserve(Eigen::VectorXi::Constant(A.rows(),12));
 		for(int j=0;j<3;j++)
@@ -381,7 +410,7 @@ void calculateM(string correspondence_path, Mesh & source_mesh, Mesh & target_me
     Vector3 t;
     for (long i = 0; i < np; ++i)
     {
-      if (!(in >> s[0] >> s[1] >> s[2] >> t[0] >> t[1] >> t[2]))
+      if (!(in >> t[0] >> t[1] >> t[2] >> s[0] >> s[1] >> s[2]))
       {
         DGP_ERROR << "Could not read correspondence points ";
       }
@@ -396,43 +425,31 @@ void calculateM(string correspondence_path, Mesh & source_mesh, Mesh & target_me
     // for(long i =0 ;i < target_vertices.size();i++){
     //   cout<<target_vertices[i][0]<<" "<<target_vertices[i][1]<<" "<<target_vertices[i][2]<<endl;
     // }
-    for(long i=0;i<np;i++){
+    if(target_mesh.numFaces() != np){
+        DGP_ERROR<<"Number of correspondence points is not equal to number of faces of target mesh";
+        return ;
+    }
+    auto tit = target_mesh.facesBegin();
+    for(long i=0;i<np;i++,tit++){
+      long source_index = 0;
+      MeshFace * target_face = &(*tit) ;
 
-      long source_index;
-      MeshFace * target_face;
       double min_dist = numeric_limits<double>::max();
 
       for(auto it = source_mesh.facesBegin(); it!= source_mesh.facesEnd(); it++){
-        vector<Vector3> vertices;
-        auto vit = (*it).verticesBegin(); 
-        vertices.push_back((*vit)->getPosition());
-        vit++;
-        vertices.push_back((*vit)->getPosition());
-        vit++;
-        vertices.push_back((*vit)->getPosition());
-        Plane3 face_plane = Plane3::fromNPoints(vertices);
-        double temp_dist = face_plane.squaredDistance(source_vertices[i]);
-        if(temp_dist < min_dist){
-          min_dist = temp_dist;
-          source_index = (*it).id;
-        }
-      }     
-      min_dist =  numeric_limits<double>::max();
-      for(auto it = target_mesh.facesBegin(); it!= target_mesh.facesEnd(); it++){
-        vector<Vector3> vertices;
-        auto vit = (*it).verticesBegin(); 
-        vertices.push_back((*vit)->getPosition());
-        vit++;
-        vertices.push_back((*vit)->getPosition());
-        vit++;
-        vertices.push_back((*vit)->getPosition());
-        Plane3 face_plane = Plane3::fromNPoints(vertices);
-        double temp_dist = face_plane.squaredDistance(target_vertices[i]);
-        if(temp_dist < min_dist){
-          min_dist = temp_dist;
-          target_face = &(*it);
-        }
-      }
-    M.push_back(pair<long,MeshFace*>(source_index,target_face));
+          auto vit = (*it).verticesBegin(); 
+          Vector3 v0 = (*vit)->getPosition();
+          vit++;
+          Vector3 v1 = (*vit)->getPosition();
+          vit++;
+          Vector3 v2 = (*vit)->getPosition();
+          double temp_dist = (v0 - source_vertices[i]).length() + (v1 - source_vertices[i]).length() + (v2 - source_vertices[i]).length();
+          if(temp_dist < min_dist){
+            min_dist = temp_dist;
+            source_index = (*it).id;
+          }
+        }     
+
+      M.push_back(pair<long,MeshFace*>(source_index,target_face));
     }   
 }
