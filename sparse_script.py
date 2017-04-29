@@ -65,15 +65,15 @@ if __name__ == '__main__':
 	fc.close()
 
 
-	# at = mat_a.transpose()
+	at = mat_a.transpose()
 
 
-	# at  = at.tocsr()
+	at  = at.tocsr()
 	mat_a = mat_a.tocsr()
-	mat_c = mat_c.tocsr()
+	# mat_c = mat_c.tocsr()
 
-	# ata = at.dot(mat_a)
-	# atc = at.dot(mat_c)
+	ata = at.dot(mat_a)
+	atc = at.dot(mat_c)
 
 	# io.mmwrite("AtA.mtx", ata)
 	
@@ -86,9 +86,9 @@ if __name__ == '__main__':
 
 	# f.close()
 
-	# ata = ata.tocsr()
-	x = lsqr(mat_a, mat_c, use_umfpack = True)
-	# x = spsolve(ata, atc, use_umfpack = True)
+	ata = ata.tocsr()
+	# x = lsmr(mat_a, mat_c)
+	x = spsolve(ata, atc, use_umfpack = True)
 	#x = bicgstab(ata, atc, maxiter = 1000)
 	print(x)
 

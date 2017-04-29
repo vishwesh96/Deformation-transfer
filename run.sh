@@ -6,8 +6,9 @@ DIR='./run_dir'
 THEA_DIR='./Thea/Code/Build/Output/bin'
 src_name="${1%????}"
 tar_name="${3%????}"
-CORR='corr.pts'
 num=${2//[!0-9]}
+rm  $tar_name'_'$num'_def.off'
+CORR='corr.pts'
 #SAMPLING
 ./Deform $3 $tar_name'.pts'
 $THEA_DIR'/MeshSample' -n$4 $1 $src_name'.pts'

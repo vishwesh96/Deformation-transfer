@@ -242,4 +242,35 @@ void calculateM(string correspondence_path, Mesh & source_mesh, Mesh & target_me
         }     
       M.push_back(pair<long,MeshFace*>(source_index,target_face));
     }   
+  // auto tit = target_mesh.facesBegin();
+  //   for(long i=0;i<np;i++,tit++){
+  //     long source_index = 0;
+  //     MeshFace * target_face = &(*tit) ;
+  //     double min_dist = numeric_limits<double>::max();
+  //     for(auto it = source_mesh.facesBegin(); it!= source_mesh.facesEnd(); it++){
+  //         auto vit = (*it).verticesBegin(); 
+  //         Vector3 v1 = (*vit)->getPosition();
+  //         vit++;
+  //         Vector3 v2 = (*vit)->getPosition();
+  //         vit++;
+  //         Vector3 v3 = (*vit)->getPosition();
+  //         Vector3 proj = source_vertices[i] + ((v1-source_vertices[i]).dot((*it).getNormal()))*(*it).getNormal();
+          
+  //         double u = ((proj[0]*v2[1])-(proj[0]*v3[1]) - (v2[0]*proj[1]) + (v2[0]*v3[1])  + (v3[0]*proj[1]) - (v3[0]*v2[1]))/ ((v1[0] * v2[1])  - (v1[0] * v3[1])  - (v2[0] * v1[1]) + (v2[0] * v3[1]) + (v3[0] * v1[1])  - (v3[0] * v2[1]));
+  //         double v = ((v1[0] * proj[1]) - (v1[0] * v3[1]) - (proj[0] * v1[1]) + (proj[0] * v3[1]) + (v3[0] * v1[1]) - (v3[0] * proj[1]))/((v1[0] * v2[1])  - (v1[0] * v3[1])  - (v2[0] * v1[1]) + (v2[0] * v3[1]) + (v3[0] * v1[1])  - (v3[0] * v2[1]));
+  //         double w = ((v1[0] * v2[1]) - (v1[0] * proj[1]) - (v2[0] * v1[1]) + (v2[0] * proj[1]) + (proj[0] * v1[1]) - (proj[0] * v2[1]))/((v1[0] * v2[1])  - (v1[0] * v3[1])  - (v2[0] * v1[1]) + (v2[0] * v3[1]) + (v3[0] * v1[1])  - (v3[0] * v2[1]));
+
+  //         Vector3 nearest =  Vector3(u,v,w);
+  //         nearest.unitize();
+
+  //         nearest = v1*nearest[0] + v2*nearest[1] + v3*nearest[2];
+
+  //         double temp_dist = (source_vertices[i] - nearest).length();
+  //         if(temp_dist < min_dist){
+  //           min_dist = temp_dist;
+  //           source_index = (*it).id;
+  //         }
+  //       }     
+  //     M.push_back(pair<long,MeshFace*>(source_index,target_face));
+  //   }   
 }

@@ -39,3 +39,7 @@ Documentation:
 * cd Thea/Code/Documentation
 * doxygen
 * gopen html/index.html
+
+
+Runnning :
+./Deform <source-in> <source-deformed> <target-in> <source_target_correspondence>
