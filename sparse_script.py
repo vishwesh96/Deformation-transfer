@@ -60,45 +60,35 @@ if __name__ == '__main__':
 			break
 
 		l = l.split(' ')
-		if int(l[0])%2 == 0:
-			mat_c[int(l[0])] = np.float64(np.float64(l[1]) * 1.0)
+		mat_c[int(l[0])] = np.float64(np.float64(l[1]) * 1.0)
 
 	fc.close()
 
-	# print(mat_c)
-	# print(mat_a)
 
-	at = mat_a.transpose()
+	# at = mat_a.transpose()
 
-	# print(mat_a)
-	# print(mat_a.transpose())
 
-	at  = at.tocsr()
+	# at  = at.tocsr()
 	mat_a = mat_a.tocsr()
+	mat_c = mat_c.tocsr()
 
-	ata = at.dot(mat_a)
-	atc = at.dot(mat_c)
-	# print(mat_c)
-	# print(ata)
+	# ata = at.dot(mat_a)
+	# atc = at.dot(mat_c)
 
-	# print(mat_c)
-	# print(at)
-	# print(atc)
-
-	# print(ata)
-	io.mmwrite("AtA.mtx", ata)
+	# io.mmwrite("AtA.mtx", ata)
 	
-	f = open("Atc.mtx", 'w')
-	f.write(str(atc.size))
-	f.write('\n')
-	for a in atc:
-		f.write(str(a))
-		f.write('\n')
+	# f = open("Atc.mtx", 'w')
+	# f.write(str(atc.size))
+	# f.write('\n')
+	# for a in atc:
+	# 	f.write(str(a))
+	# 	f.write('\n')
 
-	f.close()
+	# f.close()
 
-	ata = ata.tocsr()
-	x = spsolve(ata, atc, use_umfpack = True)
+	# ata = ata.tocsr()
+	x = lsqr(mat_a, mat_c, use_umfpack = True)
+	# x = spsolve(ata, atc, use_umfpack = True)
 	#x = bicgstab(ata, atc, maxiter = 1000)
 	print(x)
 
