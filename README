@@ -3,7 +3,8 @@ Assume $basedir is some directory where you're going to check out the
 source code.
 * cd $basedir
 * git clone --recursive https://github.com/sidch/TheaDepsUnix   (Thea
-depends on Boost etc which are all here)
+depends on Boost etc whic
+h are all here)
 * cd TheaDepsUnix/Source
 * sudo ./install-defaults.sh --with-wxwidgets --use-root --user
 <your-username> --prefix /usr/local -j4
@@ -42,4 +43,24 @@ Documentation:
 
 
 Runnning :
-./Deform <source-in> <source-deformed> <target-in> <source_target_correspondence>
+
+souce mesh : source.off
+souce deformed mesh : source_deformed.off
+target mesh : target.off
+target deformed mesh : target_deformed.off
+
+1) Open the source and target meshes by running Browse3D tool in Thea/Code/Build/Output/bin
+	and select about 70-80 marker points marking corresponding points from both the meshes.
+	This will generate 2 files source.picked and target.picked
+
+2)  Run
+	./markers source
+	./markers target
+	This will bring the .picked files in correct format
+
+3) Put the source.picked and target.picked files in the same folder containing the meshes
+
+4) Run
+   ./run.sh source.off source_deformed.off target.off <numpoints>
+
+	<numpoints> is no. of points to sample from source.off which can be around half the no. of faces of source.off for high resolution meshes
