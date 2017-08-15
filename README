@@ -22,6 +22,7 @@ Installing the Thea library and bundled tools:
 * git clone --recursive https://github.com/sidch/Thea
 * cd Thea/Code/Build
 * cmake .
+* Put the Register.cpp file into Thea/Code/Source/Tools/Register/ folder and replace the original file
 * make -j4
 * make TheaTools -j4
 * sudo make install    (puts core Thea libs and headers in /usr/local)
@@ -49,15 +50,15 @@ souce deformed mesh : source_deformed.off
 target mesh : target.off
 target deformed mesh : target_deformed.off
 
-0) Put the Register.cpp file into Thea/Code/Source/Tools/Register/ folder and replace the original file
-	Then compile using make -j4 and make TheaTools -j4 as given above
+0) Clone http://github.com/sidch/DGP and copy the DGP/DGP subfolder to src/
 
 1) Open the source and target meshes by running Browse3D tool in Thea/Code/Build/Output/bin
 	and select about 70-80 marker points marking corresponding points from both the meshes.
 	This will generate 2 files source.picked and target.picked
 
-2)  Run
+2)  
 	Remove the first line of both source.picked and target.picked files
+	Run
 	./markers source
 	./markers target
 	This will bring the .picked files in correct format
